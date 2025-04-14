@@ -1,0 +1,9 @@
+Flask
+Flask-CORS
+Flask-SQLAlchemy
+Werkzeug
+python-dotenv
+jwt
+pyjwt==2.9.0
+flask_jwt_extended
+Werkzeug
