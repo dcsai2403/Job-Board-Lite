@@ -17,7 +17,7 @@ CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://l
 jwt = JWTManager(app)
 
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+ALLOWED_EXTENSIONS = {'pdf'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -58,6 +58,7 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
+        print(f"User found: {user.name}")  # Debugging line
         token = generate_token(user)
         return jsonify({"token": token, "role": user.role})
 
