@@ -23,15 +23,25 @@ const JobSeekerDashboard = () => {
       })
       .then((data) => setJobs(data))
       .catch((err) => console.error("Error fetching jobs:", err));
-
+  
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        setApplicantName(decoded.name || "Unknown");
+        const base64Payload = token.split(".")[1]; // Extract the payload part of the JWT
+        const decodedPayload = JSON.parse(atob(base64Payload)); // Decode the base64 payload
+        if (decodedPayload && decodedPayload.name) {
+          setApplicantName(decodedPayload.name); // Set the name from the token
+        } else {
+          console.warn("Name field is missing in the token payload");
+          setApplicantName("Unknown"); // Fallback if name is not present
+        }
       } catch (e) {
         console.error("Failed to decode token", e);
+        setApplicantName("Unknown"); // Fallback in case of an error
       }
+    } else {
+      console.warn("No token found in localStorage");
+      setApplicantName("Unknown"); // Fallback if no token is found
     }
   }, []);
 
@@ -130,10 +140,12 @@ const JobSeekerDashboard = () => {
     .finally(() => setLoading(false)); // Stop loading spinner
 };
 
-  return (
-    <div className="p-6 max-w-5xl mx-auto">
+return (
+  <div className="p-6 max-w-5xl mx-auto">
     <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-bold">Available Jobs</h2>
+      <h2 className="text-2xl font-bold">
+        {selectedJob ? `Apply for ${selectedJob.title} position` : "Available Jobs"}
+      </h2>
       <div className="flex gap-4">
         <button
           onClick={handleRefresh}
@@ -163,8 +175,6 @@ const JobSeekerDashboard = () => {
 
       {selectedJob ? (
         <form onSubmit={handleSubmitApplication} className="space-y-4">
-          <h3 className="text-lg font-semibold">Apply for {selectedJob.title}</h3>
-
           <label className="block font-medium">Name</label>
           <input
             type="text"
