@@ -19,21 +19,21 @@ const JobSeekerDashboard = () => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const base64Payload = token.split(".")[1]; // Extract the payload part of the JWT
-        const decodedPayload = JSON.parse(atob(base64Payload)); // Decode the base64 payload
+        const base64Payload = token.split(".")[1];
+        const decodedPayload = JSON.parse(atob(base64Payload));
         if (decodedPayload && decodedPayload.sub && decodedPayload.sub.name) {
-          setApplicantName(decodedPayload.sub.name); // Correctly access the name inside the sub object
+          setApplicantName(decodedPayload.sub.name);
         } else {
           console.warn("Name field is missing in the token payload");
-          setApplicantName("Unknown"); // Fallback if name is not present
+          setApplicantName("Unknown");
         }
       } catch (e) {
         console.error("Failed to decode token", e);
-        setApplicantName("Unknown"); // Fallback in case of an error
+        setApplicantName("Unknown");
       }
     } else {
       console.warn("No token found in localStorage");
-      setApplicantName("Unknown"); // Fallback if no token is found
+      setApplicantName("Unknown");
     }
   }, []);
 
@@ -60,7 +60,7 @@ const JobSeekerDashboard = () => {
 
   const handleSubmitApplication = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start spinner
+    setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -93,7 +93,7 @@ const JobSeekerDashboard = () => {
       console.error("Error submitting application:", err);
       setErrorMessage(err.message || "Failed to submit application. Please try again.");
     } finally {
-      setLoading(false); // Stop spinner
+      setLoading(false);
     }
   };
 
@@ -105,7 +105,7 @@ const JobSeekerDashboard = () => {
   };
 
   const handleRefresh = () => {
-    setLoading(true); // Show loading spinner during refresh
+    setLoading(true);
     fetch("http://localhost:5000/api/jobs")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch jobs");
@@ -127,29 +127,36 @@ const JobSeekerDashboard = () => {
         setErrorMessage("Failed to refresh jobs. Please try again.");
         setTimeout(() => setErrorMessage(""), 1500);
       })
-      .finally(() => setLoading(false)); // Stop loading spinner
+      .finally(() => setLoading(false));
   };
+
+  const showDefaultSuccessMessage =
+    successMessage && !(successMessage === "No update from the Recruiters." && jobs.length === 0);
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">
-          {selectedJob ? `Apply for ${selectedJob.title} position` : (jobs.length > 0 ? "Available Jobs" : "")}
+          {selectedJob
+            ? `Apply for ${selectedJob.title} position`
+            : jobs.length > 0
+            ? "Available Jobs"
+            : ""}
         </h2>
       </div>
-  
-      {successMessage && (
+
+      {showDefaultSuccessMessage && (
         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
           {successMessage}
         </div>
       )}
+
       {errorMessage && (
         <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
           {errorMessage}
         </div>
       )}
-  
-      {/* Main Content Area */}
+
       {jobs.length === 0 && !selectedJob ? (
         <div className="text-center py-10">
           <h3 className="text-xl font-semibold">No Jobs Available</h3>
@@ -164,7 +171,7 @@ const JobSeekerDashboard = () => {
             readOnly
             className="w-full px-3 py-2 border rounded bg-gray-100"
           />
-  
+
           <label className="block font-medium">Email</label>
           <input
             type="email"
@@ -174,7 +181,7 @@ const JobSeekerDashboard = () => {
             className="w-full px-3 py-2 border rounded"
             placeholder="you@example.com"
           />
-  
+
           <label className="block font-medium">Phone Number</label>
           <input
             type="tel"
@@ -184,7 +191,7 @@ const JobSeekerDashboard = () => {
             className="w-full px-3 py-2 border rounded"
             placeholder="123-456-7890"
           />
-  
+
           <label className="block font-medium">Cover Letter</label>
           <textarea
             value={coverLetter}
@@ -194,7 +201,7 @@ const JobSeekerDashboard = () => {
             className="w-full px-3 py-2 border rounded"
             placeholder="Write your cover letter here..."
           />
-  
+
           <label className="block font-medium">Upload Resume (PDF)</label>
           <input
             type="file"
@@ -202,7 +209,7 @@ const JobSeekerDashboard = () => {
             onChange={handleFileChange}
             className="block w-full"
           />
-  
+
           <div className="flex gap-4 items-center">
             <button
               type="submit"
@@ -229,44 +236,58 @@ const JobSeekerDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
-            <div
-              key={job.id}
-              className="bg-white border rounded-lg shadow hover:shadow-lg transition-shadow p-4"
-            >
-              <h3 className="text-lg font-semibold text-blue-600">{job.title}</h3>
-              <p className="text-gray-700 mt-2">{job.description}</p>
-              <p className="text-sm text-gray-500 mt-2">
-                📍 Location: {job.location || "Not specified"}
-              </p>
-              <p className="text-sm text-gray-500">
-                🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
-              </p>
-              <button
-                onClick={() => handleApply(job)}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-              >
-                Apply Now
-              </button>
-            </div>
-          ))}
+  <div
+    key={job.id}
+    className="bg-white border rounded-lg shadow hover:shadow-lg transition-shadow p-3 flex flex-col justify-between"
+  >
+    <h3 className="text-lg font-semibold text-blue-600 mb-1">{job.title}</h3>
+    <p className="text-gray-700 text-sm mb-1">{job.description}</p>
+    <p className="text-sm text-gray-500 mb-1">
+      📍 Location: {job.location || "Not specified"}
+    </p>
+    <p className="text-sm text-gray-500 mb-2">
+      🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
+    </p>
+    {job.applied ? (
+      <div className="mt-2 bg-green-100 text-green-700 py-2 px-4 rounded text-center">
+        You have applied for this job
+      </div>
+    ) : (
+      <div className="mt-2 flex-grow flex justify-center">
+        <button
+          onClick={() => handleApply(job)}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+        >
+          Apply Now
+        </button>
+      </div>
+    )}
+  </div>
+))}
+
         </div>
       )}
-  
-      {/* Conditionally show these buttons */}
+
       {!selectedJob && (
-        <div className="flex gap-4 mt-6 justify-center">
-          <button
-            onClick={handleRefresh}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-          >
-            Refresh
-          </button>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
-          >
-            Logout
-          </button>
+        <div className="flex flex-col items-center mt-6">
+          <div className="flex gap-4 mb-2">
+            <button
+              onClick={handleRefresh}
+              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+            >
+              Refresh
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
+            >
+              Logout
+            </button>
+          </div>
+
+          {successMessage === "No update from the Recruiters." && jobs.length === 0 && (
+            <p className="text-gray-500 italic text-sm mt-1">{successMessage}</p>
+          )}
         </div>
       )}
     </div>
