@@ -93,3 +93,71 @@ jobboard/
 1. Navigate to the backend directory:
    ```bash
    cd jobboard-backend
+   ```
+
+2. Install dependencies:
+
+```bash
+   pip install -r requirements.txt
+```
+3. Run the app:
+
+```bash
+python .\app.py
+```
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+
+```bash
+cd jobboard-frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+
+npm run dev
+
+### Usage
+1. Open the frontend in your browser at http://localhost:5173.
+
+2. Register as a job seeker or recruiter.
+
+3. Job seekers can browse jobs and apply, while recruiters can post jobs and view applicants
+
+### API Endpoints
+1. Authentication:
+
+   - POST /api/auth/register: Register a new user.
+
+   - POST /api/auth/login: Login and receive a JWT token.
+
+2. Jobs
+
+   - GET /api/jobs: Get all job postings.
+
+   - POST /api/recruiter/jobs: Post a new job (Recruiter only).
+
+   - GET /api/recruiter/jobs: Get jobs posted by the recruiter.
+
+3. Applications
+
+   - POST /api/jobs/<job_id>/apply: Apply for a job (Job Seeker only).
+
+   - GET /api/applications: View applications submitted by the job seeker.
+
+### Docker Setup
+
+1. Build and start the containers:
+
+```bash
+docker-compose up --build
+```
+
+2. Access the frontend at:
+ http://localhost:5173 and the backend at http://localhost:5000.
