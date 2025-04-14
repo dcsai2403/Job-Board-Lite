@@ -4,5 +4,5 @@ Flask-SQLAlchemy
 Werkzeug
 flask-mysql
 python-dotenv
-PyJWT==1.6.1
+PyJWT==2.0
 flask_jwt_extended
