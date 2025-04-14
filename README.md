@@ -9,11 +9,12 @@ The **Job Board Application** is a full-stack web application designed to connec
 1. [Project Structure](#project-structure)
 2. [Features](#features)
 3. [Technologies Used](#technologies-used)
-4. [Setup and Installation](#setup-and-installation)
+4. [Docker Setup](#docker-setup)
+5. [Setup and Installation](#setup-and-installation)
    - [Backend Setup](#backend-setup)
    - [Frontend Setup](#frontend-setup)
-5. [Usage](#usage)
-6. [API Endpoints](#api-endpoints)
+6. [Usage](#usage)
+7. [API Endpoints](#api-endpoints)
 
 ---
 
@@ -51,6 +52,19 @@ The project is organized into two main directories:
 - **React Router**: For routing and navigation.
 - **Tailwind CSS**: Utility-first CSS framework for styling.
 - **Vite**: Build tool for fast development.
+
+---
+
+### Docker Setup
+
+1. Build and start the containers:
+
+```bash
+docker-compose up --build
+```
+
+2. Access the frontend at:
+ http://localhost:5173 and the backend at http://localhost:5000.
 
 ---
 
@@ -122,14 +136,3 @@ npm run dev
    - POST /api/jobs/<job_id>/apply: Apply for a job (Job Seeker only).
 
    - GET /api/applications: View applications submitted by the job seeker.
-
-### Docker Setup
-
-1. Build and start the containers:
-
-```bash
-docker-compose up --build
-```
-
-2. Access the frontend at:
- http://localhost:5173 and the backend at http://localhost:5000.
