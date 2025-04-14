@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from config import Config
@@ -42,6 +41,9 @@ def register():
 
     if User.query.filter_by(email=email).first():
         return jsonify({"msg": "Email already exists"}), 400
+
+    if not name:
+        return jsonify({"msg": "Name is required"}), 400  # Ensure name is provided
 
     user = User(name=name, email=email, role=role)
     user.set_password(password)
