@@ -23,7 +23,7 @@ const JobSeekerDashboard = () => {
       })
       .then((data) => setJobs(data))
       .catch((err) => console.error("Error fetching jobs:", err));
-  
+
     const token = localStorage.getItem("token");
     if (token) {
       try {
@@ -71,7 +71,7 @@ const JobSeekerDashboard = () => {
     setLoading(true); // Start spinner
     setErrorMessage("");
     setSuccessMessage("");
-
+  
     const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("cover_letter", coverLetter);
@@ -80,7 +80,7 @@ const JobSeekerDashboard = () => {
     if (resumeFile) {
       formData.append("resume", resumeFile);
     }
-
+  
     try {
       const res = await fetch(`http://localhost:5000/api/jobs/${selectedJob.id}/apply`, {
         method: "POST",
@@ -89,12 +89,12 @@ const JobSeekerDashboard = () => {
         },
         body: formData,
       });
-
+  
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.msg || "Failed to submit application");
       }
-
+  
       setSuccessMessage("Application submitted successfully!");
       setSelectedJob(null);
     } catch (err) {
@@ -113,55 +113,55 @@ const JobSeekerDashboard = () => {
   };
 
   const handleRefresh = () => {
-  setLoading(true); // Show loading spinner during refresh
-  fetch("http://localhost:5000/api/jobs")
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      return res.json();
-    })
-    .then((data) => {
-      if (JSON.stringify(data) !== JSON.stringify(jobs)) {
-        setJobs(data);
-        setSuccessMessage("Jobs updated successfully!");
-        setTimeout(() => setSuccessMessage(""), 1500);
-      }
+    setLoading(true); // Show loading spinner during refresh
+    fetch("http://localhost:5000/api/jobs")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch jobs");
+        return res.json();
+      })
+      .then((data) => {
+        if (JSON.stringify(data) !== JSON.stringify(jobs)) {
+          setJobs(data);
+          setSuccessMessage("Jobs updated successfully!");
+          setTimeout(() => setSuccessMessage(""), 1500);
+        } else {
+          setJobs(data);
+          setSuccessMessage("No update from the Recruiters.");
+          setTimeout(() => setSuccessMessage(""), 1500);
+        }
+      })
+      .catch((err) => {
+        console.error("Error refreshing jobs:", err);
+        setErrorMessage("Failed to refresh jobs. Please try again.");
+        setTimeout(() => setErrorMessage(""), 1500);
+      })
+      .finally(() => setLoading(false)); // Stop loading spinner
+  };
 
-      else{
-        setJobs(data);
-        setSuccessMessage("No update from the Recruiters.");
-        setTimeout(() => setSuccessMessage(""), 1500);
-      }
-    })
-    .catch((err) => {
-      console.error("Error refreshing jobs:", err);
-      setErrorMessage("Failed to refresh jobs. Please try again.");
-      setTimeout(() => setErrorMessage(""), 1500);
-    })
-    .finally(() => setLoading(false)); // Stop loading spinner
-};
-
-return (
-  <div className="p-6 max-w-5xl mx-auto">
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-bold">
-        {selectedJob ? `Apply for ${selectedJob.title} position` : "Available Jobs"}
-      </h2>
-      <div className="flex gap-4">
-        <button
-          onClick={handleRefresh}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-        >
-          Refresh
-        </button>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
-        >
-          Logout
-        </button>
+  return (
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center mb-4">
+        {jobs.length > 0 && (
+          <h2 className="text-2xl font-bold">
+            {selectedJob ? `Apply for ${selectedJob.title} position` : "Available Jobs"}
+          </h2>
+        )}
+        <div className="flex gap-4">
+          <button
+            onClick={handleRefresh}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+          >
+            Refresh
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
+          >
+            Logout
+          </button>
+        </div>
       </div>
-    </div>
-
+  
       {successMessage && (
         <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
           {successMessage}
@@ -172,79 +172,12 @@ return (
           {errorMessage}
         </div>
       )}
-
+  
       {selectedJob ? (
         <form onSubmit={handleSubmitApplication} className="space-y-4">
-          <label className="block font-medium">Name</label>
-          <input
-            type="text"
-            value={applicantName}
-            readOnly
-            className="w-full px-3 py-2 border rounded bg-gray-100"
-          />
-
-          <label className="block font-medium">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded"
-            placeholder="you@example.com"
-          />
-
-          <label className="block font-medium">Phone Number</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-            className="w-full px-3 py-2 border rounded"
-            placeholder="123-456-7890"
-          />
-
-          <label className="block font-medium">Cover Letter</label>
-          <textarea
-            value={coverLetter}
-            onChange={(e) => setCoverLetter(e.target.value)}
-            required
-            rows="5"
-            className="w-full px-3 py-2 border rounded"
-            placeholder="Write your cover letter here..."
-          />
-
-          <label className="block font-medium">Upload Resume (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            className="block w-full"
-          />
-
-          <div className="flex gap-4 items-center">
-            <button
-              type="submit"
-              className={`bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded ${
-                loading || !email || !phone || !coverLetter || !resumeFile
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              disabled={loading || !email || !phone || !coverLetter || !resumeFile}
-            >
-              {loading ? "Submitting..." : "Submit Application"}
-            </button>
-            {loading && <ClipLoader color="#ffffff" size={20} />}
-            <button
-              type="button"
-              onClick={() => setSelectedJob(null)}
-              className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-          </div>
+          ...
         </form>
-      ) : (
+      ) : jobs.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
             <div
@@ -254,10 +187,10 @@ return (
               <h3 className="text-lg font-semibold text-blue-600">{job.title}</h3>
               <p className="text-gray-700 mt-2">{job.description}</p>
               <p className="text-sm text-gray-500 mt-2">
-              📍 Location: {job.location || "Not specified"}
+                📍 Location: {job.location || "Not specified"}
               </p>
               <p className="text-sm text-gray-500">
-              🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
+                🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
               </p>
               <button
                 onClick={() => handleApply(job)}
@@ -267,6 +200,15 @@ return (
               </button>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center mt-16">
+          <h3 className="text-xl font-semibold text-gray-700">
+            No jobs available at the moment
+          </h3>
+          <p className="text-gray-500 mt-2">
+            Please check back later or refresh the page for updates.
+          </p>
         </div>
       )}
     </div>
