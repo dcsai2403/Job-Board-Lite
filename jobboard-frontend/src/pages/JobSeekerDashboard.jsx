@@ -154,7 +154,7 @@ const JobSeekerDashboard = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">
           {selectedJob
-            ? `Apply for ${selectedJob.title} position`
+            ? `Apply for - ${selectedJob.title} position`
             : jobs.length > 0
             ? "Available Jobs"
             : ""}
@@ -266,8 +266,8 @@ const JobSeekerDashboard = () => {
     </p>
     {job.applied ? (
   <div
-    className="mt-auto bg-green-50 border border-green-500 text-green-700 py-3 px-5 rounded text-center shadow-sm"
-    style={{ color: "#047857", backgroundColor: "#f0fdf4" }} // Inline styles as fallback
+    className="mt-auto bg-green-50 border border-green-500 text-green-900 py-3 px-5 rounded text-center shadow-sm"
+    style={{ color: "#064e3b", backgroundColor: "#f0fdf4" }} // Inline styles as fallback
   >
     <span className="font-semibold text-lg">✔ You have applied for this job</span>
   </div>
