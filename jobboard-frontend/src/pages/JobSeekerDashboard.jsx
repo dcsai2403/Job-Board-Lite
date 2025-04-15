@@ -16,29 +16,40 @@ const JobSeekerDashboard = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const fetchJobs = async () => {
+      setLoading(true);
       try {
-        const base64Payload = token.split(".")[1];
-        const decodedPayload = JSON.parse(atob(base64Payload));
-        if (decodedPayload && decodedPayload.sub && decodedPayload.sub.name) {
-          setApplicantName(decodedPayload.sub.name);
-        } else {
-          console.warn("Name field is missing in the token payload");
-          setApplicantName("Unknown");
-        }
-      } catch (e) {
-        console.error("Failed to decode token", e);
-        setApplicantName("Unknown");
+        const res = await fetch("http://localhost:5000/api/jobs");
+        if (!res.ok) throw new Error("Failed to fetch jobs");
+        const data = await res.json();
+        setJobs(data);
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
+        setErrorMessage("Failed to load jobs. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    } else {
-      console.warn("No token found in localStorage");
-      setApplicantName("Unknown");
-    }
+    };
+  
+    fetchJobs();
   }, []);
 
   const handleApply = (job) => {
+    const token = localStorage.getItem("token");
+    let userName = "";
+  
+    // Decode the token to extract the user's name from the "sub" object
+    if (token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        userName = decodedToken.sub?.name || "Unknown User"; // Access "name" inside "sub"
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    }
+  
     setSelectedJob(job);
+    setApplicantName(userName); // Set the user's name
     setCoverLetter("");
     setResumeFile(null);
     setSuccessMessage("");
@@ -236,34 +247,34 @@ const JobSeekerDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
-  <div
-    key={job.id}
-    className="bg-white border rounded-lg shadow hover:shadow-lg transition-shadow p-3 flex flex-col justify-between"
-  >
-    <h3 className="text-lg font-semibold text-blue-600 mb-1">{job.title}</h3>
-    <p className="text-gray-700 text-sm mb-1">{job.description}</p>
-    <p className="text-sm text-gray-500 mb-1">
-      📍 Location: {job.location || "Not specified"}
-    </p>
-    <p className="text-sm text-gray-500 mb-2">
-      🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
-    </p>
-    {job.applied ? (
-      <div className="mt-2 bg-green-100 text-green-700 py-2 px-4 rounded text-center">
-        You have applied for this job
-      </div>
-    ) : (
-      <div className="mt-2 flex-grow flex justify-center">
-        <button
-          onClick={() => handleApply(job)}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-        >
-          Apply Now
-        </button>
-      </div>
-    )}
-  </div>
-))}
+          <div
+            key={job.id}
+            className="bg-white border rounded-lg shadow hover:shadow-lg transition-shadow p-3 flex flex-col justify-between"
+          >
+            <h3 className="text-lg font-semibold text-blue-600 mb-1">{job.title}</h3>
+            <p className="text-gray-700 text-sm mb-1">{job.description}</p>
+            <p className="text-sm text-gray-500 mb-1">
+              📍 Location: {job.location || "Not specified"}
+            </p>
+            <p className="text-sm text-gray-500 mb-2">
+              🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
+            </p>
+            {job.applied ? (
+              <div className="mt-2 bg-green-100 text-green-700 py-2 px-4 rounded text-center">
+                You have applied for this job
+              </div>
+            ) : (
+              <div className="mt-2 flex-grow flex justify-center">
+                <button
+                  onClick={() => handleApply(job)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                >
+                  Apply Now
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
 
         </div>
       )}
