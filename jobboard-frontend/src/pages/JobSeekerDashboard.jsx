@@ -19,7 +19,12 @@ const JobSeekerDashboard = () => {
     const fetchJobs = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:5000/api/jobs");
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:5000/api/jobs", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) throw new Error("Failed to fetch jobs");
         const data = await res.json();
         setJobs(data);
@@ -35,28 +40,28 @@ const JobSeekerDashboard = () => {
   }, []);
 
   const handleApply = (job) => {
-    const token = localStorage.getItem("token");
-    let userName = "";
-  
-    // Decode the token to extract the user's name from the "sub" object
-    if (token) {
-      try {
-        const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        userName = decodedToken.sub?.name || "Unknown User"; // Access "name" inside "sub"
-      } catch (err) {
-        console.error("Error decoding token:", err);
-      }
+  const token = localStorage.getItem("token");
+  let userName = "";
+
+  // Decode the token to extract the user's name from the "sub" object
+  if (token) {
+    try {
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+      userName = decodedToken.sub?.name || "Unknown User"; // Access "name" inside "sub"
+    } catch (err) {
+      console.error("Error decoding token:", err);
     }
-  
-    setSelectedJob(job);
-    setApplicantName(userName); // Set the user's name
-    setCoverLetter("");
-    setResumeFile(null);
-    setSuccessMessage("");
-    setErrorMessage("");
-    setEmail("");
-    setPhone("");
-  };
+  }
+
+  setSelectedJob(job);
+  setApplicantName(userName); // Set the user's name
+  setCoverLetter("");
+  setResumeFile(null);
+  setSuccessMessage("");
+  setErrorMessage("");
+  setEmail("");
+  setPhone("");
+};
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -247,34 +252,37 @@ const JobSeekerDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
-          <div
-            key={job.id}
-            className="bg-white border rounded-lg shadow hover:shadow-lg transition-shadow p-3 flex flex-col justify-between"
-          >
-            <h3 className="text-lg font-semibold text-blue-600 mb-1">{job.title}</h3>
-            <p className="text-gray-700 text-sm mb-1">{job.description}</p>
-            <p className="text-sm text-gray-500 mb-1">
-              📍 Location: {job.location || "Not specified"}
-            </p>
-            <p className="text-sm text-gray-500 mb-2">
-              🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
-            </p>
-            {job.applied ? (
-              <div className="mt-2 bg-green-100 text-green-700 py-2 px-4 rounded text-center">
-                You have applied for this job
-              </div>
-            ) : (
-              <div className="mt-2 flex-grow flex justify-center">
-                <button
-                  onClick={() => handleApply(job)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-                >
-                  Apply Now
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+  <div
+    key={job.id}
+    className="bg-white border rounded-lg shadow hover:shadow-lg transition-shadow p-3 flex flex-col justify-between"
+  >
+    <h3 className="text-lg font-semibold text-blue-600 mb-1">{job.title}</h3>
+    <p className="text-gray-700 text-sm mb-1">{job.description}</p>
+    <p className="text-sm text-gray-500 mb-1">
+      📍 Location: {job.location || "Not specified"}
+    </p>
+    <p className="text-sm text-gray-500 mb-2">
+      🕒 Posted on: {new Date(job.date_posted).toLocaleDateString()}
+    </p>
+    {job.applied ? (
+  <div
+    className="mt-auto bg-green-50 border border-green-500 text-green-700 py-3 px-5 rounded text-center shadow-sm"
+    style={{ color: "#047857", backgroundColor: "#f0fdf4" }} // Inline styles as fallback
+  >
+    <span className="font-semibold text-lg">✔ You have applied for this job</span>
+  </div>
+) : (
+  <div className="mt-2 flex-grow flex justify-center">
+    <button
+      onClick={() => handleApply(job)}
+      className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+    >
+      Apply Now
+    </button>
+  </div>
+)}
+  </div>
+))}
 
         </div>
       )}

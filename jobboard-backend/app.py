@@ -67,30 +67,39 @@ def login():
     return jsonify({"msg": "Invalid email or password"}), 401
 
 @app.route("/api/jobs", methods=["GET"])
+@jwt_required(optional=True)
 def get_all_jobs():
+    
+    current_user = get_jwt_identity()
+    user_id = current_user["id"] if current_user else None
+
     jobs = JobPost.query.all()
-    return jsonify([{
-        "id": job.id,
-        "title": job.title,
-        "description": job.description,
-        "location": job.location,
-        "date_posted": job.date_posted.isoformat()
-    } for job in jobs])
+    job_list = []
+    for job in jobs:
+        applied = Application.query.filter_by(user_id=user_id, job_post_id=job.id).first() is not None
+        job_list.append({
+            "id": job.id,
+            "title": job.title,
+            "description": job.description,
+            "location": job.location,
+            "date_posted": job.date_posted.isoformat(),
+            "applied": applied
+        })
+    return jsonify(job_list)
 
 @app.route("/api/recruiter/jobs", methods=["POST"])
 @jwt_required()
 def recruiter_jobs_post():
     current_user = get_jwt_identity()
-    print("Decoded JWT payload:", current_user)  # Debugging line
+    print("Decoded JWT payload:", current_user)
 
     user = User.query.get(current_user["id"])
 
-    # Convert role to lowercase for comparison
     if not user or user.role.lower() != "recruiter":
         return jsonify({"msg": "Only recruiters can access this route"}), 403
 
     data = request.get_json()
-    print("Incoming payload:", data)  # Debugging line
+    print("Incoming payload:", data)
 
     title = data.get("title")
     description = data.get("description")
@@ -146,12 +155,10 @@ def apply_to_job(job_id):
     if not user or user.role.lower() != "seeker":
         return jsonify({"msg": "Only job seekers can apply"}), 403
 
-    # Handle form data
     email = request.form.get("email")
     phone = request.form.get("phone")
     cover_letter = request.form.get("cover_letter")
 
-    # Handle file upload as a stream
     if 'resume' not in request.files:
         return jsonify({"msg": "Resume file is required"}), 400
 
@@ -160,14 +167,12 @@ def apply_to_job(job_id):
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        # Save the file in chunks
         with open(file_path, 'wb') as f:
-            while chunk := file.stream.read(4096):  # Read in 4KB chunks
+            while chunk := file.stream.read(4096):
                 f.write(chunk)
     else:
         return jsonify({"msg": "Invalid file type. Only PDF, DOC, and DOCX are allowed"}), 400
 
-    # Save application to the database
     application = Application(
         user_id=user.id,
         job_post_id=job_id,
@@ -234,22 +239,19 @@ def get_applicants_for_job(job_id):
     current_user = get_jwt_identity()
     user = User.query.get(current_user["id"])
 
-    # Ensure the user is a recruiter
     if not user or user.role.lower() != "recruiter":
         return jsonify({"msg": "Only recruiters can access this route"}), 403
 
-    # Ensure the job belongs to the recruiter
     job = JobPost.query.get_or_404(job_id)
     if job.employer_id != user.id:
         return jsonify({"msg": "Unauthorized"}), 403
 
-    # Fetch applicants for the job
     applications = Application.query.filter_by(job_post_id=job_id).all()
     applicants = [{
         "id": app.user_id,
         "name": User.query.get(app.user_id).name,
         "email": User.query.get(app.user_id).email,
-        "dob": "Not available"  # Add DOB if it's part of the User model
+        "dob": "Not available"
     } for app in applications]
 
     return jsonify(applicants)
